@@ -1,4 +1,6 @@
-namespace MatCom.Examen;
+using MatCom.Examen;
+
+namespace MatCom.Solver;
 
 public static class Solution {
     public static long AuxMinDanger(CityNode CurrentCity, int amountRoads)
