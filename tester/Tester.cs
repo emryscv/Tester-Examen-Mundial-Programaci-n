@@ -1,3 +1,4 @@
+using System.Runtime.ConstrainedExecution;
 using MatCom.Examen;
 
 namespace MatCom.Tester;
@@ -17,6 +18,7 @@ public class Tester : TesterBase<int, CityNode, long, long>
         List<CityNode> ExistingCityNodes = new List<CityNode>();
         CityNode RootCity = TreeGenerator(0, random.Next(1, maxDepth), new List<CityNode>(), random);
         TeleportGenerator(RootCity, ExistingCityNodes, random); 
+        DeleteCicleDFS(RootCity, new List<CityNode>());
         return  RootCity;
     }
 
@@ -27,6 +29,7 @@ public class Tester : TesterBase<int, CityNode, long, long>
 
     public override bool OutputChecker(CityNode input, long output, long expectedOutput)
     {
+        System.Console.WriteLine(expectedOutput + " " + output);
         return output == expectedOutput;
     }
 
@@ -55,17 +58,38 @@ public class Tester : TesterBase<int, CityNode, long, long>
         }
     }
 
-    private void TeleportGenerator(CityNode RootCity, List<CityNode> ExistingCityNodes, Random randInt){
+    private void TeleportGenerator(CityNode rootCity, List<CityNode> ExistingCityNodes, Random randInt){
         int teleportChance = randInt.Next(0, teleportRatio); //genera la probabilidad de que el nodo tenga un teleport
         int teleportIndex = randInt.Next(0, ExistingCityNodes.Count); //genera el indice del nodo al que se teleportara
 
-        CityNode? teleport = (teleportChance % teleportRatio == 0 && RootCity.Roads().Length > 0) ? ExistingCityNodes[teleportIndex] : null; //genera el nodo al que se teleportara con un change 1/teleportRatio    
-        if(RootCity != teleport){
-            RootCity.AddTeleport(teleport);
+        CityNode? teleport = (teleportChance % teleportRatio == 0 && rootCity.Roads().Length > 0) ? ExistingCityNodes[teleportIndex] : null; //genera el nodo al que se teleportara con un change 1/teleportRatio    
+        if(rootCity != teleport){
+            rootCity.AddTeleport(teleport);
         }
         
-        foreach((int, CityNode) road in RootCity.Roads()){
+        foreach((int, CityNode) road in rootCity.Roads()){
             TeleportGenerator(road.Item2, ExistingCityNodes, randInt);
+        }
+    }
+
+    private void DeleteCicleDFS(CityNode city, List<CityNode> visited){
+        visited.Add(city);
+        if(city.HasTeleport().Item1){
+            if(visited.Contains(city.HasTeleport().Item2)){
+                city.DropTeleport();
+            }    
+            else{
+                DeleteCicleDFS(city.HasTeleport().Item2, visited);
+            }  
+        }
+
+        foreach((int, CityNode) road in city.Roads()){
+            if(visited.Contains(road.Item2)){
+                city.roads.Remove(road);
+            }
+            else{
+                DeleteCicleDFS(road.Item2, visited);
+            }
         }
     }
 }   

@@ -1,8 +1,8 @@
 namespace MatCom.Examen;
 
 public class CityNode{
-    private List<(int, CityNode)> roads;
-    private CityNode? teleport;
+    public List<(int, CityNode)> roads {get; set;}
+    public CityNode? teleport {get; set;}
     
     public CityNode(CityNode? teleport = null, List<(int, CityNode)>? roads = null){
         this.roads = (roads is null) ? new() : roads;
